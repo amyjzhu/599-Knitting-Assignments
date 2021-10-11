@@ -35,7 +35,7 @@ class Knit_Graph:
     loops: Dict[int, Loop]
         A map of each unique loop id to its loop
     yarns: Dict[str, Yarn]
-         Yarn Ids mapped to the corrisponding yarn
+         Yarn Ids mapped to the corresponding yarn
     """
 
     def __init__(self):
