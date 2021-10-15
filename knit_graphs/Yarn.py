@@ -21,7 +21,7 @@ class Yarn:
         The id of the last loop on the yarn, none if no loops on the yarn
     """
 
-    def __init__(self, yarn_id: str, last_loop: Optional[Loop] = None):
+    def __init__(self, yarn_id: str, knit_graph, last_loop: Optional[Loop] = None):
         """
         A Graph structure to show the yarn-wise relationship between loops
         :param yarn_id: the identifier for this loop
@@ -33,6 +33,7 @@ class Yarn:
         else:
             self.last_loop_id: int = last_loop.loop_id
         self._yarn_id: str = yarn_id
+        self.knitgraph = knit_graph
 
     @property
     def yarn_id(self) -> str:
@@ -57,7 +58,33 @@ class Yarn:
         # Add an edge between this loop and the loop before it on the yarn
         # Update last_loop_id
         # Return the created loop's id and the loop
-        raise NotImplementedError
+        lid = loop_id
+        first_stitch = False
+        if self.last_loop_id is None:
+            # TODO double-check handling of discrepant "last loop id"s
+            self.last_loop_id = self.knitgraph.last_loop_id
+            first_stitch = True
+
+        if loop_id is None:    
+            lid = self.last_loop_id + 1
+
+        if loop is None:
+            loop = Loop(lid, self.yarn_id, is_twisted)
+        
+        self.yarn_graph.add_node(lid, loop=loop)
+
+        # only do this if it wasn't none to begin with 
+        if not first_stitch:
+            print("edge from:")
+            print(self.last_loop_id)
+            print(lid)
+            # can only connect if there are previous loops
+            self.yarn_graph.add_edge(self.last_loop_id, lid)
+                    
+        self.last_loop_id = lid
+
+    
+        return (lid, loop)
 
     def __contains__(self, item: Union[int, Loop]) -> bool:
         """

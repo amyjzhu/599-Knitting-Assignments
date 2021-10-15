@@ -37,7 +37,13 @@ class Loop:
         :param stack_position: The position to insert the parent into, if None add on top of the stack
         """
         # TODO: Implement based on Description
-        raise NotImplementedError
+        insert_at = len(self.parent_loops)
+
+        if stack_position is not None:
+            insert_at = stack_position
+        
+        self.parent_loops[insert_at:insert_at] = [parent]
+
 
     @property
     def loop_id(self) -> int:
@@ -109,7 +115,8 @@ class Loop:
             twisted = ", twisted"
         else:
             twisted = ""
-        return f"{self.loop_id} on yarn {self.loop_id}{twisted}"
+        return f"{self.loop_id} on yarn {self.yarn_id}{twisted}"
+        # return f"{self.loop_id} on yarn {self.loop_id}{twisted}"
 
     def __repr__(self):
         return str(self)

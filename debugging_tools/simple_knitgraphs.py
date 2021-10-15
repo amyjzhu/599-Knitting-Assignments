@@ -10,7 +10,7 @@ def stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
     :return: a knitgraph of stockinette on one yarn of width stitches by height courses
     """
     knit_graph = Knit_Graph()
-    yarn = Yarn("yarn")
+    yarn = Yarn("yarn", knit_graph)
     knit_graph.add_yarn(yarn)
 
     # make the first set of loops on the bottom (0th) course
@@ -70,7 +70,7 @@ def twisted_stripes(width: int = 4, height=5, left_twists: bool = True) -> Knit_
     :return: A knitgraph with repeating pattern of twisted stitches surrounded by knit wales
     """
     knitGraph = Knit_Graph()
-    yarn = Yarn("yarn")
+    yarn = Yarn("yarn", knitGraph)
     knitGraph.add_yarn(yarn)
 
     # Add the first course of loops
@@ -125,7 +125,7 @@ def lace(width: int = 4, height: int = 4):
     :return: a knitgraph with k2togs and yarn-overs surrounded by knit wales
     """
     knitGraph = Knit_Graph()
-    yarn = Yarn("yarn")
+    yarn = Yarn("yarn", knitGraph)
     knitGraph.add_yarn(yarn)
     first_row = []
     for _ in range(0, width):
