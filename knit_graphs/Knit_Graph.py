@@ -48,35 +48,28 @@ class Knit_Graph:
         """
         :param loop: the loop to be added in as a node in the graph
         """
-        # Todo: Implement
         # Add a node with the loop id to the graph with a parameter keyed to it at "loop" to store the loop
         # If this loop is not on its specified yarn add it to the end of the yarn
         # Add the loop to the loops dictionary
 
         
-
+        # add loop to graph (with Loop as attribute)
         loop_id = loop.loop_id
         self.graph.add_node(loop_id, loop=loop)
 
+        # add to list of loops
         self.loops[loop_id] = loop
 
+        # get associated yarn
         yarn_id = loop.yarn_id
-        print("LOOP ID {} ", loop_id)
-        # print("YARN ID " + yarn_id)
-
-        # print(self.yarns)
-        # print(loop)
-        # print(yarn_id)
         yarn = self.yarns[yarn_id]
 
         if yarn is None:
             raise AttributeError
 
-        # print(yarn.yarn_graph)
-
-        if (not yarn.__contains__(loop)): # TODO just do this check inside yarn?
+        # if this loop isn't already on the yarn, add to end of yarn
+        if (not yarn.__contains__(loop)):
             yarn.add_loop_to_end(loop_id, loop)
-            print("add")
 
 
     def add_yarn(self, yarn: Yarn):
@@ -97,15 +90,17 @@ class Knit_Graph:
         :param pull_direction: the direction the child is pulled through the parent
         :param stack_position: The position to insert the parent into, by default add on top of the stack
         """
-        # Todo: Implement
         # Make an edge in the graph from the parent loop to the child loop. The edge should have three parameters:
         # "pull_direction", "depth", and "parent_offset"
         # add the parent loop to the child's parent loop stack
 
+        # make an edge
         self.graph.add_edge(parent_loop_id, child_loop_id, pull_direction=pull_direction, depth=depth, parent_offset = parent_offset)
 
+        # get the loops from loop storage
         loop = self.loops[child_loop_id]
         parent = self.loops[parent_loop_id]
+        # add the parent loop
         loop.add_parent_loop(parent, stack_position)
 
 
@@ -120,73 +115,64 @@ class Knit_Graph:
         The first set of loops in the graph is on course 0.
         A course change occurs when a loop has a parent loop that is in the last course.
         """
-        # Todo: Implement
-        # A course  of a knitted structure is a set of neighboring loops that do not involve loops on the prior course
-        # The first course (starting with loop 0) is the 0th course
-        # Note that not having a parent loop does not mean a loop is on course 0, consider yarn-overs
-
-        # here is what we need to do
-        # we should get stuff without a parent and get the neighbors until parents exist and are in row direclty below
-        # then just check to see if parents become lower than the current count and if so increment row
-        # check all parents, get the highest one 
-        # must be one more than greatest parent 
-
-        # assign same as neighbor rows
-        # if there are parents, then we make this one max parent + 1
-        # then keep going 
-
-        # TODO: what's the first node in the graph?
-        #print(self.graph)
+       
+        # by default, assign the same course as the neighbor
+        # (solves the problems of yarn-overs, etc)
+        # then check the parents
+        # if the parents exist, the loop must be on a course
+        # greater than the latest parent
         
         knitgraph = self.graph 
+        # assumptions about how the knitgraph works
         first_id = 0
         first_course = 0
 
+        # get the first node in the graph (one with no in edges)
         first = list(networkx.topological_sort(knitgraph))[first_id]
 
+        # store a list of loops on each course and a loop-to-course map
         on_each_course = dict()
         loop_to_course = dict()
+
         # we have the id of the first element
         loop = knitgraph.nodes[first]["loop"]
-        # should be easier to just check the parent loops on the loop
+        # this node obviously goes on the first course
         loop_to_course[first] = first_course
         on_each_course.setdefault(first_course, []).append(first)
 
+        # now we're working with other nodes in the same course
         current_course = first_course
+
         # now get the yarn neighbor
-        # todo something different might happen if different yarns suddenly appear...
+        # something different might happen if different yarns suddenly appear...
         yarn = self.yarns[loop.yarn_id]
 
         if yarn is None:
             raise AttributeError
         
-        # now, find the neighbors of the loop on the yarn 
+        # find the neighbors of the loop on the yarn 
         outs = list(yarn.yarn_graph.neighbors(first))
-        print(knitgraph.nodes)
-        print(outs)
-        print(first)
+    
         assert(len(outs) <= 1) # Yarn can't have two out edges
         while (len(outs) > 0):
+            # grab the neighbor
             out = outs[0]
             temp = current_course
-            # need the loop info
-            print(knitgraph.nodes)
-            print(out)
+            # need the Loop info for parents
             node = knitgraph.nodes[out]["loop"]
-            # get parents
-            print([x for x in node.parent_loops])
+            # get the maximum course of all parents
             parent_max = max([loop_to_course[x.loop_id] for x in node.parent_loops] + [-1]) # in case no parents
-            # if parents exist...
+            # compare parents to current course
             course = max([parent_max + 1, temp])
 
-            # temporarily assign them that 
-            # then check their parents 
             loop_to_course[out] = course
             on_each_course.setdefault(course, []).append(out)
+            # update course we're working with
+            current_course = course
 
+            # get the next neighbors
             outs = list(yarn.yarn_graph.neighbors(out))
 
-         
         return (loop_to_course, on_each_course)
 
     def __contains__(self, item: Union[int, Loop]) -> bool:

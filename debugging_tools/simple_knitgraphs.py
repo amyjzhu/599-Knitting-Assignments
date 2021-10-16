@@ -1,7 +1,7 @@
 """A set of functions that generate simple knit-graph structures useful for debugging"""
 from knit_graphs.Knit_Graph import Knit_Graph
+from knit_graphs.Knit_Graph import Pull_Direction
 from knit_graphs.Yarn import Yarn
-
 
 def stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
     """
@@ -45,21 +45,107 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
     assert width > 0
     assert height > 0
     assert rib_width <= width
-    # Todo Implement
-    raise NotImplementedError
+
+    knit_graph = Knit_Graph()
+    yarn = Yarn("yarn", knit_graph)
+    knit_graph.add_yarn(yarn)
+    # make the first set of loops on the bottom (0th) course
+    first_course = []
+    for _ in range(0, width):
+        loop_id, loop = yarn.add_loop_to_end()
+        first_course.append(loop_id)
+        knit_graph.add_loop(loop)
+
+    # the rib might end halfway though
+    # so let's keep track of what stitches to end on
+    # and whether this is a reverse row or not
+    # I had an interesting idea for a mathy solution but it was hard to follow
+    # so instead, make an array for the order
+    rib_order_knit = []
+    for s in range(0, width):
+        rib_order_knit.append((s // rib_width) % 2 == 0) # in the middle of knitting if we've done full rib, else half
+
+    print(rib_order_knit)
+    # make new course of loops and connect them to the last course
+    prior_course = first_course
+    for c in range(1, height):
+        next_course = []
+        for parent_id in reversed(prior_course):
+            # are we going backwards? if so, have to read pattern backwards
+            currently_reversed = True
+            child_id, child = yarn.add_loop_to_end()
+            next_course.append(child_id)
+            knit_graph.add_loop(child)
+
+            # what order am I in?            
+            rib_order_index = parent_id - (width * (c - 1))
+
+            # since we go back and forth, we sometimes work backwards
+            if (currently_reversed):
+                rib_order_index = (width - 1) - rib_order_index
+            
+            # what direction to fulfill the pattern?
+            knitdir = Pull_Direction.BtF if rib_order_knit[rib_order_index] else Pull_Direction.FtB
+            knit_graph.connect_loops(parent_id, child_id, pull_direction=knitdir)
+
+            # switch sides
+            currently_reversed = not currently_reversed
+            
+        prior_course = next_course
+
+    return knit_graph
 
 
 def seed(width: int = 4, height=4) -> Knit_Graph:
     """
     :param width: a number greater than 0 to set the number of stitches in the swatch
-    :param height: A number greater than 0 to set teh number of courses in the swatch
+    :param height: A number greater than 0 to set the number of courses in the swatch
     :return: A knit graph with a checkered pattern of knit and purl stitches of width and height size.
     The first stitch should be a knit
     """
     assert width > 0
-    assert height > 0
-    # Todo Implement
-    raise NotImplementedError
+    assert height > 0    
+    
+    knit_graph = Knit_Graph()
+    yarn = Yarn("yarn", knit_graph)
+    knit_graph.add_yarn(yarn)
+
+    # make the first set of loops on the bottom (0th) course
+    first_course = []
+    for _ in range(0, width):
+        loop_id, loop = yarn.add_loop_to_end()
+        first_course.append(loop_id)
+        knit_graph.add_loop(loop)
+
+    # make new course of loops and connect them to the last course
+    prior_course = first_course
+    
+    # keeping track of whether we start with knits or purls
+    # if we start with knits, this is 1
+    # It's not clear whether "first stitch is a knit"
+    # means the first stitch we make or the first right-to-left stitch on the screen
+    # I am assuming "first stitch we make" (due to seed_4x4.PNG), but can be adjusted for the latter
+    # interpretation by checking parity of width (even means knit = False at start)
+    knit = True
+    for _ in range(1, height):
+        next_course = []
+        for parent_id in reversed(prior_course):
+            child_id, child = yarn.add_loop_to_end()
+            next_course.append(child_id)
+            knit_graph.add_loop(child)
+            # knit-purl-knit-purl policy always follows regardless of row
+            # if we knit last time, purl next time
+            if (knit):
+                pull_dir = Pull_Direction.BtF
+            else:
+                pull_dir = Pull_Direction.FtB
+            knit_graph.connect_loops(parent_id, child_id, pull_direction=pull_dir)
+            # swap knit and purl
+            knit = not knit
+        
+        prior_course = next_course
+
+    return knit_graph
 
 
 def twisted_stripes(width: int = 4, height=5, left_twists: bool = True) -> Knit_Graph:

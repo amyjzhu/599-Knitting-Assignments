@@ -7,7 +7,6 @@ import networkx as networkx
 
 from knit_graphs.Loop import Loop
 
-
 class Yarn:
     """
     A class to represent a yarn structure
@@ -51,36 +50,34 @@ class Yarn:
         :param loop_id: the id of the new loop, if the loopId is none, it defaults to 1 more than last put on this yarn
         :return: the loop_id added to the yarn, the loop added to the yarn
         """
-        # TODO: Implement
-        # If Loop Id is None generate a new id from provided loop or based on last id on this yarn
-        # If no loop is provided create one with loop id and twisted parameter
-        # Add Loop Id as a node to the yarn_graph and add parameter keyed to it at "loop" to store the loop
-        # Add an edge between this loop and the loop before it on the yarn
-        # Update last_loop_id
-        # Return the created loop's id and the loop
         lid = loop_id
         first_stitch = False
+
+        # if we didn't have any other stitches on this yarn
+        # then the last_loop_id is none and we don't want to make a connection
         if self.last_loop_id is None:
             # TODO double-check handling of discrepant "last loop id"s
+            # currently taking from global knitgraph
             self.last_loop_id = self.knitgraph.last_loop_id
             first_stitch = True
 
+        # we weren't given a loop id, so just take 1 + last_loop_id
         if loop_id is None:    
             lid = self.last_loop_id + 1
 
+        # create a Loop if needed
         if loop is None:
             loop = Loop(lid, self.yarn_id, is_twisted)
         
+        # add node to graph
         self.yarn_graph.add_node(lid, loop=loop)
 
-        # only do this if it wasn't none to begin with 
+        # if there were stitches on the yarn, then connect them yarnwise
         if not first_stitch:
-            print("edge from:")
-            print(self.last_loop_id)
-            print(lid)
             # can only connect if there are previous loops
             self.yarn_graph.add_edge(self.last_loop_id, lid)
                     
+        # and set the last_loop_id to this one
         self.last_loop_id = lid
 
     

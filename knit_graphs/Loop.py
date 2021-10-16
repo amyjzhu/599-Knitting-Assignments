@@ -36,12 +36,14 @@ class Loop:
         :param parent: the Loop to be added onto the stack
         :param stack_position: The position to insert the parent into, if None add on top of the stack
         """
-        # TODO: Implement based on Description
+        # get the default insertion location
         insert_at = len(self.parent_loops)
 
+        # unless we have a provided stack_position
         if stack_position is not None:
             insert_at = stack_position
         
+        # insert into designated spot
         self.parent_loops[insert_at:insert_at] = [parent]
 
 
