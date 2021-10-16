@@ -65,7 +65,6 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
     for s in range(0, width):
         rib_order_knit.append((s // rib_width) % 2 == 0) # in the middle of knitting if we've done full rib, else half
 
-    print(rib_order_knit)
     # make new course of loops and connect them to the last course
     prior_course = first_course
     for c in range(1, height):
