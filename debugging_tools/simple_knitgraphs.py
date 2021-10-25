@@ -85,10 +85,8 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
 
             # since we go back and forth, we sometimes work backwards
             if (currently_reversed):
-                print("Reversed")
                 rib_order_index = (width - 1) - rib_order_index
             
-            print("Reading ", rib_order_index)
             # what direction to fulfill the pattern?
             knitdir = Pull_Direction.BtF if rib_order_knit[rib_order_index] else Pull_Direction.FtB
             knit_graph.connect_loops(parent_id, child_id, pull_direction=knitdir)
