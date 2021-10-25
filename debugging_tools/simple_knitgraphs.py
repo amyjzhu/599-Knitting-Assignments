@@ -252,3 +252,57 @@ def lace(width: int = 4, height: int = 4):
         prior_row = next_row
 
     return knitGraph
+
+
+def both_twists(height=20) -> Knit_Graph:
+    """
+    :param height:  the number of courses of the swatch
+    :return: A knitgraph with repeating pattern of twisted stitches surrounded by knit wales
+    """
+    width = 10
+    knitGraph = Knit_Graph()
+    yarn = Yarn("yarn", knitGraph)
+    knitGraph.add_yarn(yarn)
+
+    # Add the first course of loops
+    first_course = []
+    for _ in range(0, width):
+        loop_id, loop = yarn.add_loop_to_end()
+        first_course.append(loop_id)
+        knitGraph.add_loop(loop)
+
+    def add_loop_and_knit(p_id, depth=0, parent_offset: int = 0):
+        """
+        adds a loop by knitting to the knitgraph
+        :param parent_offset: Set the offset of the parent loop in the cable. offset = parent_index - child_index
+        :param p_id: the parent loop's id
+        :param depth: the crossing- depth to knit at
+        """
+        child_id, child = yarn.add_loop_to_end()
+        next_course.append(child_id)
+        knitGraph.add_loop(child)
+        knitGraph.connect_loops(p_id, child_id, depth=depth, parent_offset=parent_offset)
+
+    # add new courses
+    prior_course = first_course
+    for course in range(1, height):
+        next_course = []
+        reversed_prior_course = [*reversed(prior_course)]
+        for col, parent_id in enumerate(reversed_prior_course):
+            if course % 2 == 1 or col in {0, 1, 4, 5, 8, 9}:  # knit on odd rows and borders or middle
+                add_loop_and_knit(parent_id)
+            elif col == 2:
+                parent_id = reversed_prior_course[3]
+                add_loop_and_knit(parent_id, depth=-1, parent_offset=-1)
+            elif col == 3:
+                parent_id = reversed_prior_course[2]
+                add_loop_and_knit(parent_id, depth=1, parent_offset=1)
+            elif col == 6:
+                parent_id = reversed_prior_course[7]
+                add_loop_and_knit(parent_id, depth=1, parent_offset=-1)
+            elif col == 7:
+                parent_id = reversed_prior_course[6]
+                add_loop_and_knit(parent_id, depth=-1, parent_offset=1)
+        prior_course = next_course
+
+    return knitGraph

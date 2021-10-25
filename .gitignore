@@ -137,3 +137,8 @@ dmypy.json
 
 #Knitout
 *.k
+!/sample_results/knitout/test_lace.k
+!/sample_results/knitout/test_rib2.k
+!/sample_results/knitout/test_seed.k
+!/sample_results/knitout/test_stst.k
+!/sample_results/knitout/test_twists.k
