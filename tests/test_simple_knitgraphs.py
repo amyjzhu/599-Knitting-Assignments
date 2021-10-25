@@ -11,6 +11,13 @@ def test_rib():
     visualize_knitGraph(rib(5, 4, 1))
 
 
+def test_rib_2():
+    visualize_knitGraph(rib(6, 4, 1))
+
+def test_rib_3():
+    visualize_knitGraph(rib(5, 4, 2))
+
+
 def test_seed():
     visualize_knitGraph(seed(4, 4))
 

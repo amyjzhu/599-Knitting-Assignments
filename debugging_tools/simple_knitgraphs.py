@@ -65,13 +65,17 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
     for s in range(0, width):
         rib_order_knit.append((s // rib_width) % 2 == 0) # in the middle of knitting if we've done full rib, else half
 
+    print(rib_order_knit)
+
     # make new course of loops and connect them to the last course
     prior_course = first_course
+    
+    # are we going backwards? if so, have to read pattern backwards
+    currently_reversed = True
+    
     for c in range(1, height):
         next_course = []
         for parent_id in reversed(prior_course):
-            # are we going backwards? if so, have to read pattern backwards
-            currently_reversed = True
             child_id, child = yarn.add_loop_to_end()
             next_course.append(child_id)
             knit_graph.add_loop(child)
@@ -81,15 +85,16 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
 
             # since we go back and forth, we sometimes work backwards
             if (currently_reversed):
+                print("Reversed")
                 rib_order_index = (width - 1) - rib_order_index
             
+            print("Reading ", rib_order_index)
             # what direction to fulfill the pattern?
             knitdir = Pull_Direction.BtF if rib_order_knit[rib_order_index] else Pull_Direction.FtB
             knit_graph.connect_loops(parent_id, child_id, pull_direction=knitdir)
 
-            # switch sides
-            currently_reversed = not currently_reversed
-            
+        # switch sides
+        currently_reversed = not currently_reversed
         prior_course = next_course
 
     return knit_graph
