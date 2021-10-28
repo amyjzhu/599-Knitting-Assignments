@@ -30,3 +30,11 @@ def test_both_twists():
     knitGraph = both_twists(height=4)
     generator = Knitout_Generator(knitGraph)
     generator.write_instructions("test_twists.k")
+
+
+if __name__ == "__main__":
+    # test_stst()
+    # test_rib()
+    # test_seed()
+    test_lace()
+    # test_both_twists()
