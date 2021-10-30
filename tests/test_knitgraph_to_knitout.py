@@ -33,8 +33,8 @@ def test_both_twists():
 
 
 if __name__ == "__main__":
-    # test_stst()
-    # test_rib()
-    # test_seed()
+    test_stst()
+    test_rib()
+    test_seed()
     test_lace()
-    # test_both_twists()
+    test_both_twists()

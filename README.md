@@ -1,1 +1,1 @@
-I didn't make any special changes. Final images are provided in result_pngs/.
+The sample result for stst uses carrier 4 rather than 3.

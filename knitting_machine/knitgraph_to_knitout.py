@@ -168,9 +168,11 @@ class Knitout_Generator:
                     print("Cable for ", parent_needle, target_needle)
                 else: # regular op like knit/purl
                     if front_bed:
-                        loop_id_to_target_needle[loop_id] = parent_needle
+                        print("knit")
+                        loop_id_to_target_needle[loop_id] = Needle(is_front = True, position = parent_needle.position)
                     else:
-                        loop_id_to_target_needle[loop_id] = parent_needle.opposite()
+                        print("purl")
+                        loop_id_to_target_needle[loop_id] = Needle(is_front = False, position = parent_needle.position)
 
 
             else:  # decrease, the bottom parent loop in the stack will be on the target needle

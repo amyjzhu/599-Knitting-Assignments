@@ -58,7 +58,7 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
     # I had an interesting idea for a mathy solution but it was hard to follow
     # so instead, make an array for the order
     rib_order_knit = []
-    for s in range(0, width):
+    for s in reversed(range(0, width)):
         rib_order_knit.append((s // rib_width) % 2 == 0) # in the middle of knitting if we've done full rib, else half
 
     print(rib_order_knit)
