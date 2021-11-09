@@ -195,6 +195,9 @@ class Knitspeak_Compiler:
             #   mark the parent_loop as "consumed" by putting it in the loop_ids_consumed_by_current_course set
             #   then connect that parent loop to the new child_loop given the stitch information in the stitch_def
             #  add the newly created loop to the end of self.cur_course_loop_ids
+
+
+            
             raise NotImplementedError
         else:  # slip statement
             assert len(stitch_def.offset_to_parent_loops) == 1, "Cannot slip multiple loops"

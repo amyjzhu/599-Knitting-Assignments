@@ -27,34 +27,121 @@ class Symbol_Table:
         #  e.g. for 1 left stitch and 2 right stitches you will have:
         #   LC1|2, LC1P|2, LC1|2P, LC1P|2P, RC1|2, RC1P|2, RC1|2P, RC1P|2P
         #  each group of loops can have 1, 2, or 3 loops
-        raise NotImplementedError
+
+        # TODO: so we need how many are crossing and which direction.
+        # how many left to right is how many at top...
+        
+        knit = Pull_Direction.BtF
+        purl = Pull_Direction.FtB
+
+        # do the interior 
+        left_sts = 1
+        right_sts = 1
+        lean = "L"
+        lean_dir = Stitch_Lean.Left
+
+        # we need to loop!
+        for left_sts in range(1, 3):
+            for right_sts in range(1, 3):
+                for lean in ["L", "R"]:
+                    if lean == "L":
+                        lean_dir = Stitch_Lean.Left
+                    add_entries(left_sts, right_sts, lean, lean_dir)
+                    
+       # TODO: SELF may not be correct in add_entries. Check it out
+        def add_entries(left_sts, right_sts, lean, lean_dir):
+            if lean_dir == Stitch_Lean.Left:
+                first = left_sts
+                second = right_sts
+                
+            else:
+                first = right_sts
+                second = left_sts
+
+        # need to ensure different types of purls available 
+            self[{f'{lean}C{first}|{second}'}] = Cable_Definition(left_crossing_loops= left_sts, \
+                                                            right_crossing_loops= right_sts, \
+                                                            left_crossing_pull_direction=knit, 
+                                                            right_crossing_pull_direction=knit, 
+                                                            cable_lean=lean_dir)
+
+            # if left is the first direction, then first P applies to it
+            left_purl = purl if lean_dir == Stitch_Lean.Left else knit
+            # if right is first direction, first P applies to it
+            right_purl = purl if lean_dir == Stitch_Lean.Right else knit
+
+            self[{f'{lean}C{first}P|{second}'}] = Cable_Definition(left_crossing_loops= left_sts, \
+                                                            right_crossing_loops= right_sts, \
+                                                            left_crossing_pull_direction=left_purl, 
+                                                            right_crossing_pull_direction=right_purl, 
+                                                            cable_lean=lean_dir)
+
+            # for P on the second group, just reverse them
+            left_purl, right_purl = right_purl, left_purl
+            self[{f'{lean}C{first}|{second}P'}] = Cable_Definition(left_crossing_loops= left_sts, \
+                                                            right_crossing_loops= right_sts, \
+                                                            left_crossing_pull_direction=left_purl, 
+                                                            right_crossing_pull_direction=right_purl, 
+                                                            cable_lean=lean_dir)
+
+            self[{f'{lean}C{first}P|{second}P'}] = Cable_Definition(left_crossing_loops= left_sts, \
+                                                            right_crossing_loops= right_sts, \
+                                                            left_crossing_pull_direction=purl, 
+                                                            right_crossing_pull_direction=purl, 
+                                                            cable_lean=lean_dir)
+    
 
     def _decreases(self):
         # Todo: add decrease symbols keyed to their definitions to the symbol table
         #  (i.e., self[{stitch_name}] = Stitch_Definition(...))
         #  You need to implement the following stitches: k2tog,k3tog, p2tog, p3tog,
         #   skpo,sppo (purl version of skpo), s2kpo, s2ppo, sk2po, sp2po
+        
+        knit = Pull_Direction.BtF
+        purl = Pull_Direction.FtB
+
+        #kntog = 
+        # k2tog
+        self[{"k2tog"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0])
+
+        #k3tog (leans further)
+        self[{"k3tog"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-2, -1, 0])
+
+        self[{"p2tog"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0])
+        self[{"p3tog"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-2, -1, 0])
+
+        #skpo
+        #TODO: s2kpo and sk2po are a guess... check with Megan
+        self[{"skpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0])
+        self[{"s2kpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0, 1]) #different stacking order...
+        self[{"sk2po"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0, -1])
+
+
         raise NotImplementedError
 
     @staticmethod
     def _slip() -> Stitch_Definition:
+        # TODO: is child_loops a quantity or an id?
+        return Stitch_Definition(pull_direction=Pull_Direction.BtF, cabling_depth=0, offset_to_parent_loops=None, child_loops=0)
         # Todo: Return (in one line) a Stitch Definition with no child_loops
-        raise NotImplementedError
+        
 
     @staticmethod
     def _yo() -> Stitch_Definition:
         # Todo: Return (in one line) will create a new loop with no parents
+        # TODO: how do you specify no parents???
+        # it seems like None just gets auto-converted to no offset
         raise NotImplementedError
 
     @staticmethod
     def _purl() -> Stitch_Definition:
         # Todo: Return (in one line) a Stitch Definition that will purl the next available loop
-        raise NotImplementedError
+        return Stitch_Definition(pull_direction=Pull_Direction.FtB) # only distinguishing feature
 
     @staticmethod
     def _knit() -> Stitch_Definition:
         # Todo: Return (in one line) a Stitch Definition that will knit the next available loop
-        raise NotImplementedError
+        return Stitch_Definition(pull_direction=Pull_Direction.BtF)
 
     def __contains__(self, item: str):
         return item.lower() in self._symbol_table
