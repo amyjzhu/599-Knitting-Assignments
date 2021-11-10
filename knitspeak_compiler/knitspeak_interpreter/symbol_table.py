@@ -111,13 +111,15 @@ class Symbol_Table:
         self[{"p3tog"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-2, -1, 0])
 
         #skpo
-        #TODO: s2kpo and sk2po are a guess... check with Megan
         self[{"skpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0])
-        self[{"s2kpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0, 1]) #different stacking order...
-        self[{"sk2po"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0, -1])
+        self[{"s2kpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1, 2]) #different stacking order...
+        self[{"sk2po"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0, 1])
+
+        self[{"sppo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0])
+        self[{"s2ppo"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[0, 1, 2]) 
+        self[{"sp2po"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0, 1])
 
 
-        raise NotImplementedError
 
     @staticmethod
     def _slip() -> Stitch_Definition:
@@ -129,9 +131,7 @@ class Symbol_Table:
     @staticmethod
     def _yo() -> Stitch_Definition:
         # Todo: Return (in one line) will create a new loop with no parents
-        # TODO: how do you specify no parents???
-        # it seems like None just gets auto-converted to no offset
-        raise NotImplementedError
+        return Stitch_Definition(pull_direction=Pull_Direction.BtF, cabling_depth=0, offset_to_parent_loops=[], child_loops=1)
 
     @staticmethod
     def _purl() -> Stitch_Definition:
