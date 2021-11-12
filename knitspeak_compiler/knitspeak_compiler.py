@@ -196,10 +196,13 @@ class Knitspeak_Compiler:
             #   then connect that parent loop to the new child_loop given the stitch information in the stitch_def
             #  add the newly created loop to the end of self.cur_course_loop_ids
 
-            # add new loop to end of yarn
+            # add new loop to end of yarn and to knitgraph
             loop_id, loop = self.yarn.add_loop_to_end()
+            self.knit_graph.add_loop(loop)
+
+            print("offset: ", stitch_def.offset_to_parent_loops)
             # TODO: check what the order is actually supposed to be 
-            for stack, parent in enumerate(stitch_def.offset_to_parent_loops):
+            for stack, parent in enumerate(stitch_def.offset_to_parent_loops):    
                 parent_loop = self.last_course_loop_ids[prior_course_index + parent]
                 if parent_loop is None:
                     raise IndexError("There is no such parent loop at index " % prior_course_index + parent)
@@ -208,10 +211,12 @@ class Knitspeak_Compiler:
 
                 self.loop_ids_consumed_by_current_course.add(parent_loop)
                 # now determine what we need to make a new connection 
+                print(f"STACKING {stack} OF PARENT {parent}")
                 self.knit_graph.connect_loops(parent_loop, loop_id, pull_direction = stitch_def.pull_direction, \
-                    stack_position = stack, depth = stitch_def.cabling_depth, parent_offset = parent)
+                    #stack_position = stack,\ 
+                    depth = stitch_def.cabling_depth, parent_offset = parent)
 
-            self.cur_course_loop_ids.add(loop_id)
+            self.cur_course_loop_ids.append(loop_id)
 
         else:  # slip statement
             assert len(stitch_def.offset_to_parent_loops) == 1, "Cannot slip multiple loops"

@@ -35,18 +35,11 @@ class Symbol_Table:
         purl = Pull_Direction.FtB
 
         # do the interior 
-        left_sts = 1
-        right_sts = 1
-        lean = "L"
-        lean_dir = Stitch_Lean.Left
+        # left_sts = 1
+        # right_sts = 1
+        # lean = "L"
+        # lean_dir = Stitch_Lean.Left
 
-        # we need to loop!
-        for left_sts in range(1, 3):
-            for right_sts in range(1, 3):
-                for lean in ["L", "R"]:
-                    if lean == "L":
-                        lean_dir = Stitch_Lean.Left
-                    add_entries(left_sts, right_sts, lean, lean_dir)
                     
        # TODO: SELF may not be correct in add_entries. Check it out
         def add_entries(left_sts, right_sts, lean, lean_dir):
@@ -59,7 +52,7 @@ class Symbol_Table:
                 second = left_sts
 
         # need to ensure different types of purls available 
-            self[{f'{lean}C{first}|{second}'}] = Cable_Definition(left_crossing_loops= left_sts, \
+            self[f'{lean}C{first}|{second}'] = Cable_Definition(left_crossing_loops= left_sts, \
                                                             right_crossing_loops= right_sts, \
                                                             left_crossing_pull_direction=knit, 
                                                             right_crossing_pull_direction=knit, 
@@ -70,7 +63,7 @@ class Symbol_Table:
             # if right is first direction, first P applies to it
             right_purl = purl if lean_dir == Stitch_Lean.Right else knit
 
-            self[{f'{lean}C{first}P|{second}'}] = Cable_Definition(left_crossing_loops= left_sts, \
+            self[f'{lean}C{first}P|{second}'] = Cable_Definition(left_crossing_loops= left_sts, \
                                                             right_crossing_loops= right_sts, \
                                                             left_crossing_pull_direction=left_purl, 
                                                             right_crossing_pull_direction=right_purl, 
@@ -78,17 +71,28 @@ class Symbol_Table:
 
             # for P on the second group, just reverse them
             left_purl, right_purl = right_purl, left_purl
-            self[{f'{lean}C{first}|{second}P'}] = Cable_Definition(left_crossing_loops= left_sts, \
+            self[f'{lean}C{first}|{second}P'] = Cable_Definition(left_crossing_loops= left_sts, \
                                                             right_crossing_loops= right_sts, \
                                                             left_crossing_pull_direction=left_purl, 
                                                             right_crossing_pull_direction=right_purl, 
                                                             cable_lean=lean_dir)
 
-            self[{f'{lean}C{first}P|{second}P'}] = Cable_Definition(left_crossing_loops= left_sts, \
+            self[f'{lean}C{first}P|{second}P'] = Cable_Definition(left_crossing_loops= left_sts, \
                                                             right_crossing_loops= right_sts, \
                                                             left_crossing_pull_direction=purl, 
                                                             right_crossing_pull_direction=purl, 
                                                             cable_lean=lean_dir)
+        
+        # we need to loop!
+        for left_sts in range(1, 3):
+            for right_sts in range(1, 3):
+                for lean in ["L", "R"]:
+                    if lean == "L":
+                        lean_dir = Stitch_Lean.Left
+                    else:
+                        lean_dir = Stitch_Lean.Right
+
+                    add_entries(left_sts, right_sts, lean, lean_dir)
     
 
     def _decreases(self):
@@ -100,24 +104,21 @@ class Symbol_Table:
         knit = Pull_Direction.BtF
         purl = Pull_Direction.FtB
 
-        #kntog = 
-        # k2tog
-        self[{"k2tog"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0])
+        self["k2tog"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0])
 
-        #k3tog (leans further)
-        self[{"k3tog"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-2, -1, 0])
+        self["k3tog"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-2, -1, 0])
 
-        self[{"p2tog"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0])
-        self[{"p3tog"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-2, -1, 0])
+        self["p2tog"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0])
+        self["p3tog"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-2, -1, 0])
 
-        #skpo
-        self[{"skpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0])
-        self[{"s2kpo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1, 2]) #different stacking order...
-        self[{"sk2po"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0, 1])
+        #skp
+        self["skpo"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1])
+        self["s2kpo"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1, 2]) #different stacking order...
+        self["sk2po"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0, 1])
 
-        self[{"sppo"}] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[1, 0])
-        self[{"s2ppo"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[0, 1, 2]) 
-        self[{"sp2po"}] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0, 1])
+        self["sppo"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[0, 1])
+        self["s2ppo"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[0, 1, 2]) 
+        self["sp2po"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0, 1])
 
 
 

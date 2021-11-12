@@ -49,8 +49,8 @@ def test_write_slipped_rib():
 
 
 if __name__ == "__main__":
-    test_stst()
-    test_rib()
-    test_write_slipped_rib()
+    # test_stst()
+    # test_rib()
+    # test_write_slipped_rib()
     test_cable()
     test_lace()
