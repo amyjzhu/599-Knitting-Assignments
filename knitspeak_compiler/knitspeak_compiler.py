@@ -200,8 +200,7 @@ class Knitspeak_Compiler:
             loop_id, loop = self.yarn.add_loop_to_end()
             self.knit_graph.add_loop(loop)
 
-            print("offset: ", stitch_def.offset_to_parent_loops)
-            # TODO: check what the order is actually supposed to be 
+            # enumerate over parents
             for stack, parent in enumerate(stitch_def.offset_to_parent_loops):    
                 parent_loop = self.last_course_loop_ids[prior_course_index + parent]
                 if parent_loop is None:
@@ -210,12 +209,12 @@ class Knitspeak_Compiler:
                     raise ValueError("Parent loop has already been consumed")
 
                 self.loop_ids_consumed_by_current_course.add(parent_loop)
-                # now determine what we need to make a new connection 
-                print(f"STACKING {stack} OF PARENT {parent}")
-                self.knit_graph.connect_loops(parent_loop, loop_id, pull_direction = stitch_def.pull_direction, \
-                    #stack_position = stack,\ 
-                    depth = stitch_def.cabling_depth, parent_offset = parent)
 
+                # now determine what we need to make a new connection 
+                self.knit_graph.connect_loops(parent_loop, loop_id, pull_direction = stitch_def.pull_direction, \
+                    stack_position = stack, depth = stitch_def.cabling_depth, parent_offset = parent)
+
+            # add to current course loops
             self.cur_course_loop_ids.append(loop_id)
 
         else:  # slip statement

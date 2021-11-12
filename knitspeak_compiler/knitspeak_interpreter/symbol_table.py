@@ -41,8 +41,12 @@ class Symbol_Table:
         # lean_dir = Stitch_Lean.Left
 
                     
-       # TODO: SELF may not be correct in add_entries. Check it out
+       # make entries for a particular combination of left and right cables
+       # and lean
+       # i.e. for left cable n stitches wide and right cable m stitches wide, and lean L
+       # make entries that knit all stitches, purl first cable, purl second cable, and purl all
         def add_entries(left_sts, right_sts, lean, lean_dir):
+            # Which direction comes first in notation?
             if lean_dir == Stitch_Lean.Left:
                 first = left_sts
                 second = right_sts
@@ -51,7 +55,7 @@ class Symbol_Table:
                 first = right_sts
                 second = left_sts
 
-        # need to ensure different types of purls available 
+        
             self[f'{lean}C{first}|{second}'] = Cable_Definition(left_crossing_loops= left_sts, \
                                                             right_crossing_loops= right_sts, \
                                                             left_crossing_pull_direction=knit, 
@@ -83,7 +87,7 @@ class Symbol_Table:
                                                             right_crossing_pull_direction=purl, 
                                                             cable_lean=lean_dir)
         
-        # we need to loop!
+        # Now loop over all combinations 
         for left_sts in range(1, 3):
             for right_sts in range(1, 3):
                 for lean in ["L", "R"]:
@@ -105,17 +109,18 @@ class Symbol_Table:
         purl = Pull_Direction.FtB
 
         self["k2tog"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0])
-
         self["k3tog"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-2, -1, 0])
 
         self["p2tog"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0])
         self["p3tog"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-2, -1, 0])
 
-        #skp
         self["skpo"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1])
-        self["s2kpo"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1, 2]) #different stacking order...
+        # left-leaning decrease
+        self["s2kpo"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[0, 1, 2]) 
+        # centred decrease
         self["sk2po"] = Stitch_Definition(pull_direction=knit, offset_to_parent_loops=[-1, 0, 1])
 
+        # purl versions    
         self["sppo"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[0, 1])
         self["s2ppo"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[0, 1, 2]) 
         self["sp2po"] = Stitch_Definition(pull_direction=purl, offset_to_parent_loops=[-1, 0, 1])
@@ -124,9 +129,8 @@ class Symbol_Table:
 
     @staticmethod
     def _slip() -> Stitch_Definition:
-        # TODO: is child_loops a quantity or an id?
-        return Stitch_Definition(pull_direction=Pull_Direction.BtF, cabling_depth=0, offset_to_parent_loops=None, child_loops=0)
         # Todo: Return (in one line) a Stitch Definition with no child_loops
+        return Stitch_Definition(pull_direction=Pull_Direction.BtF, cabling_depth=0, offset_to_parent_loops=None, child_loops=0)
         
 
     @staticmethod
