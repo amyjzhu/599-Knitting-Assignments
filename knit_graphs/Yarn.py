@@ -54,7 +54,7 @@ class Yarn:
         return self._yarn_id
 
     def add_loop_to_end(self, loop_id: int = None, loop: Optional[Loop] = None,
-                        is_twisted: bool = False) -> Tuple[int, Loop]:
+                        is_twisted: bool = False, length_multiple = 1) -> Tuple[int, Loop]:
         """
         Adds the loop at the end of the yarn
         :param is_twisted: The parameter used for twisting the loop if it is created in the method
@@ -62,6 +62,7 @@ class Yarn:
         :param loop_id: the id of the new loop, if the loopId is none,
             it defaults to 1 more than last put on the knit Graph (CHANGE)
         :return: the loop_id added to the yarn, the loop added to the yarn
+        :param length_multiple: How many needles apart are this stitch from last stitch (1 = next to each other)
         """
         lid = loop_id
         first_stitch = False
@@ -88,7 +89,7 @@ class Yarn:
         # if there were stitches on the yarn, then connect them yarnwise
         if not first_stitch:
             # can only connect if there are previous loops
-            self.yarn_graph.add_edge(self.last_loop_id, lid)
+            self.yarn_graph.add_edge(self.last_loop_id, lid, length_multiple=length_multiple)
                     
         # and set the last_loop_id to this one
         self.last_loop_id = lid

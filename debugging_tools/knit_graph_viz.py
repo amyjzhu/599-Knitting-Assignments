@@ -51,8 +51,12 @@ def visualize_knitGraph(knit_graph: Knit_Graph, display_name: str = "nx.html", h
         prior_level = level
 
     for yarn in knit_graph.yarns.values():
-        for prior_node, next_node in yarn.yarn_graph.edges:
-            network.add_edge(prior_node, next_node, arrow="middle", physics=True, color="red")
+        for edge in yarn.yarn_graph.edges.data("length_multiple"):
+            prior_node = edge[0]
+            next_node = edge[1]
+            length_multiple = edge[2]
+            print(edge)
+            network.add_edge(prior_node, next_node, arrow="middle", physics=True, color="red", label=length_multiple)
 
     for parent_id, child_id in knit_graph.graph.edges:
         direction = knit_graph.graph[parent_id][child_id]["pull_direction"]

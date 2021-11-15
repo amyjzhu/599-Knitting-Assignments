@@ -80,7 +80,7 @@ class Knit_Graph:
 
     def connect_loops(self, parent_loop_id: int, child_loop_id: int,
                       pull_direction: Pull_Direction = Pull_Direction.BtF,
-                      stack_position: Optional[int] = None, depth: int = 0, parent_offset: int = 0):
+                      stack_position: Optional[int] = None, depth: int = 0, parent_offset: int = 0,):
         """
         Creates a stitch-edge by connecting a parent and child loop
         :param parent_offset: The direction and distance, oriented from the front, to the parent_loop
@@ -95,7 +95,9 @@ class Knit_Graph:
         # add the parent loop to the child's parent loop stack
 
         # make an edge
-        self.graph.add_edge(parent_loop_id, child_loop_id, pull_direction=pull_direction, depth=depth, parent_offset = parent_offset)
+        # want to add a notion of length 
+        self.graph.add_edge(parent_loop_id, child_loop_id, pull_direction=pull_direction, depth=depth,\
+             parent_offset = parent_offset)
 
         # get the loops from loop storage
         loop = self.loops[child_loop_id]
