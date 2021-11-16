@@ -1,6 +1,7 @@
 """Simple knitgraph generators used primarily for debugging"""
 from knit_graphs.Knit_Graph import Knit_Graph, Pull_Direction
 from knit_graphs.Yarn import Yarn
+import knitgraph_graphs_answer
 
 def stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
     """
@@ -21,6 +22,43 @@ def stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
     for _ in range(1, height):
         next_row = []
         for parent_id in reversed(prior_row):
+            child_id, child = yarn.add_loop_to_end()
+            next_row.append(child_id)
+            knitGraph.add_loop(child)
+            knitGraph.connect_loops(parent_id, child_id)
+        prior_row = next_row
+
+    return knitGraph
+
+def skipped_stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
+    """
+    :param width: the number of stitches of the swatch
+    :param height:  the number of courses of the swatch
+    :return: a knitgraph of stockinette on one yarn of width stitches by height course
+    """
+    knitGraph = Knit_Graph()
+    yarn = Yarn("yarn", knitGraph, carrier_id=4)
+    knitGraph.add_yarn(yarn)
+    first_row = []
+    for i in range(0, width):
+        if i == 2:
+            # TODO: something important to note is that this would probably skip every single stitch
+            # in the future. would need to yo here to make it not, but how? 
+            # how can you specify the skipped stitch here? 
+            loops, (loop_id, loop) = yarn.add_skip_loops(length_multiple=2)
+            for int_loop_id, int_loop in loops: 
+                knitGraph.add_loop(int_loop)
+        else:
+            loop_id, loop = yarn.add_loop_to_end()
+
+        first_row.append(loop_id)
+        knitGraph.add_loop(loop)
+
+    prior_row = first_row
+    for _ in range(1, height):
+        next_row = []
+        for parent_id in reversed(prior_row):
+            print(parent_id)
             child_id, child = yarn.add_loop_to_end()
             next_row.append(child_id)
             knitGraph.add_loop(child)

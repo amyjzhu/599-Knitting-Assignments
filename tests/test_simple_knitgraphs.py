@@ -29,6 +29,9 @@ def test_twisted_stripes():
 def test_lace():
     visualize_knitGraph(lace(4, 4))
 
+def test_skipped():
+    visualize_knitGraph(skipped_stockinette(4, 4))
+
 if __name__ == "__main__":
     # test_stockinette()
     # test_rib()
@@ -36,4 +39,5 @@ if __name__ == "__main__":
     # test_rib_3()
     # test_seed()
     # test_twisted_stripes()
-    test_lace()
+    # test_lace()
+    test_skipped()

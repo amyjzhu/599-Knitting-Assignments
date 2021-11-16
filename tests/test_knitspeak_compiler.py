@@ -9,6 +9,11 @@ def test_stst():
     knit_graph = compiler.compile(4, 4, pattern)
     visualize_knitGraph(knit_graph, "stst.html")
 
+def test_skipped():
+    pattern = "1st row k, float, [k] to end. all ws rows p. 3rd row [k] to end. 5th row [k] to end."
+    compiler = Knitspeak_Compiler()
+    knit_graph = compiler.compile(4, 4, pattern)
+    visualize_knitGraph(knit_graph, "skipped.html")
 
 def test_rib():
     rib_width = 2
@@ -49,8 +54,9 @@ def test_write_slipped_rib():
 
 
 if __name__ == "__main__":
-    test_stst()
-    test_rib()
-    test_write_slipped_rib()
-    test_cable()
-    test_lace()
+    # test_stst()
+    # test_rib()
+    # test_write_slipped_rib()
+    # test_cable()
+    # test_lace()
+    test_skipped()

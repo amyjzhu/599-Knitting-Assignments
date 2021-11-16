@@ -16,7 +16,7 @@ class Loop:
         The order in the list implies the stacking order with the first loop at the bottom the stack
     """
 
-    def __init__(self, loop_id: int, yarn_id: str, is_twisted: bool = False):
+    def __init__(self, loop_id: int, yarn_id: str, is_twisted: bool = False, skip: bool = False):
         """
         :param loop_id: id of loop. IDs should represent the order that loops are created
             with the first loop being created with id 0
@@ -27,6 +27,7 @@ class Loop:
         assert loop_id >= 0, f"{loop_id}: Loop_id must be non-negative"
         self._loop_id: int = loop_id
         self.yarn_id = yarn_id
+        self.skip = skip
         self.parent_loops: List[Loop] = []
 
     def add_parent_loop(self, parent, stack_position: Optional[int] = None):

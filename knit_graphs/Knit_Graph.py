@@ -56,6 +56,7 @@ class Knit_Graph:
         # add loop to graph (with Loop as attribute)
         loop_id = loop.loop_id
         self.graph.add_node(loop_id, loop=loop)
+        self.last_loop_id = loop_id
 
         # add to list of loops
         self.loops[loop_id] = loop
@@ -70,6 +71,7 @@ class Knit_Graph:
         # if this loop isn't already on the yarn, add to end of yarn
         if (not yarn.__contains__(loop)):
             yarn.add_loop_to_end(loop_id, loop)
+            
 
 
     def add_yarn(self, yarn: Yarn):

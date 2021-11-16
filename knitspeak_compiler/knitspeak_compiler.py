@@ -187,6 +187,21 @@ class Knitspeak_Compiler:
             stitch_def = stitch_def.copy_and_flip()
         course_index = len(self.cur_course_loop_ids)
         prior_course_index = (len(self.last_course_loop_ids) - 1) - course_index
+
+        if stitch_def.child_loops == 0 and stitch_def.offset_to_parent_loops == []:
+            # it's a skipped stitch/float
+            # do we need to
+            # TODO: what if we skip multiple stitches?
+            # this loop shouldn't be at the end.
+            # need a way to create a filler float 
+            # rather than having a length
+            loops, (loop_id, loop) = self.yarn.add_skip_loops(length_multiple=2)
+            for int_loop_id, int_loop in loops: 
+                self.knit_graph.add_loop(int_loop)
+
+            return
+
+
         if stitch_def.child_loops == 1:
             # Todo: Implement processing the stitch into the knitgraph
             #  add a new loop to the end of  self.yarn and add it to the self.knitgraph

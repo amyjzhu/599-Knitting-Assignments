@@ -27,6 +27,17 @@ class Knitout_Generator:
         self._carriage_passes: List[Carriage_Pass] = []
         self._instructions: List[str] = []
 
+    def transform_knitgraph_skips(self):
+        """
+        Adds new skip loops to simulate floats. 
+        """
+
+        # TODO:
+        # find all skips and add new loops in the yarn 
+        # skips do mean target needles must change depending on skips so far 
+        
+        
+
     def generate_instructions(self):
         """
         Generates the instructions for this knitgraph
@@ -306,11 +317,13 @@ class Knitout_Generator:
         carrier_set = [self._carrier]
         even_tucks_data: Dict[Needle, Tuple[Optional[int], None]] = {}
         odd_tucks_data: Dict[Needle, Tuple[Optional[int], None]] = {}
-        for needle_pos in range(0, len(first_course_loops)):
-            if needle_pos % 2 == 0:
-                even_tucks_data[Needle(True, needle_pos)] = -1, None  # note, fake loop_id
-            else:
-                odd_tucks_data[Needle(True, needle_pos)] = -1, None
+        for needle_pos, loop_id in enumerate(first_course_loops):
+            loop = self._knit_graph[loop_id]
+            if not loop.skip:
+                if needle_pos % 2 == 0:
+                    even_tucks_data[Needle(True, needle_pos)] = -1, None  # note, fake loop_id
+                else:
+                    odd_tucks_data[Needle(True, needle_pos)] = -1, None
 
         even_pass = Carriage_Pass(Instruction_Type.Tuck, Pass_Direction.Right_to_Left, even_tucks_data,
                                   carrier_set, self._machine_state)
@@ -322,8 +335,12 @@ class Knitout_Generator:
         reverse_knits: Dict[Needle, Tuple[int, None]] = {}
         first_loops: Dict[Needle, Tuple[int, None]] = {}
         for needle_pos, loop_id in enumerate(first_course_loops):
-            reverse_knits[Needle(True, needle_pos)] = -1, None  # note, fake loop_id
-            first_loops[Needle(True, needle_pos)] = loop_id, None
+            # is this a skip loop? if so, don't cast on
+            loop = self._knit_graph[loop_id]
+            print(loop.skip)
+            if not loop.skip:
+                reverse_knits[Needle(True, needle_pos)] = -1, None  # note, fake loop_id
+                first_loops[Needle(True, needle_pos)] = loop_id, None
 
         carriage_pass = Carriage_Pass(Instruction_Type.Knit, Pass_Direction.Right_to_Left,
                                       reverse_knits, carrier_set, self._machine_state)

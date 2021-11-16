@@ -1,7 +1,7 @@
 """
 The Yarn Data Structure
 """
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 
 import networkx as networkx
 
@@ -53,6 +53,62 @@ class Yarn:
         """
         return self._yarn_id
 
+    def add_skip_loops(self, loop_id: int = None, loop: Optional[Loop] = None,
+                        is_twisted: bool = False, length_multiple = 1) -> Tuple[List[Tuple[int, Loop]], Tuple[int, Loop]]:
+        lid = loop_id
+        first_stitch = False
+
+        # TODO: THIS ONLY WORKS IF WE ALWAYS SUPPLY ID 
+        # MAYBE REMOVE ABILITY TO SELF-SPECIFY 
+        
+        # if we didn't have any other stitches on this yarn
+        # then the last_loop_id is none and we don't want to make a connection
+        if self.last_loop_id is None:
+            # TODO double-check handling of discrepant "last loop id"s
+            # currently taking from global knitgraph
+            self.last_loop_id = self.knitgraph.last_loop_id
+            first_stitch = True
+
+
+        # we weren't given a loop id, so just take 1 + last_loop_id
+        if loop_id is None:    
+            lid = self.last_loop_id + 1
+            
+        loops = []
+        for i in range(length_multiple - 1):
+            int_loop = Loop(lid+i, self.yarn_id, is_twisted=False, skip=True)
+            self.yarn_graph.add_node(lid + i, loop=int_loop)
+            loops.append((lid+i, int_loop))
+           
+        new_lid = lid + length_multiple - 1
+
+        # create a Loop if needed
+        if loop is None:
+            loop = Loop(new_lid, self.yarn_id, is_twisted)
+        
+        # add node to graph
+        # TODO: hack to make sure it's the right lid, but may break. enforce!!!!
+        #loop.loop_id = new_lid 
+        
+        self.yarn_graph.add_node(new_lid, loop=loop)
+
+        # if there were stitches on the yarn, then connect them yarnwise
+        if not first_stitch:
+            # can only connect if there are previous loops
+            # if there should be multiple in between, make some dummy loops 
+            for i in range(length_multiple):
+                # connect 
+                self.yarn_graph.add_edge(lid + i - 1, lid + i)
+            # connect the last edge
+            self.yarn_graph.add_edge(self.last_loop_id, lid)
+                    
+        # and set the last_loop_id to this one
+        self.last_loop_id = new_lid
+
+        # TODO: need to return all the middle stitches so we can get courses properly
+    
+        return (loops, (new_lid, loop))
+
     def add_loop_to_end(self, loop_id: int = None, loop: Optional[Loop] = None,
                         is_twisted: bool = False, length_multiple = 1) -> Tuple[int, Loop]:
         """
@@ -67,6 +123,8 @@ class Yarn:
         lid = loop_id
         first_stitch = False
 
+        # TODO: REVERT TO ORIGINAL
+        
         # if we didn't have any other stitches on this yarn
         # then the last_loop_id is none and we don't want to make a connection
         if self.last_loop_id is None:
@@ -75,27 +133,41 @@ class Yarn:
             self.last_loop_id = self.knitgraph.last_loop_id
             first_stitch = True
 
+
         # we weren't given a loop id, so just take 1 + last_loop_id
         if loop_id is None:    
             lid = self.last_loop_id + 1
+            
+        for i in range(length_multiple - 1):
+           self.yarn_graph.add_node(lid + i, loop=Loop(lid+i, self.yarn_id, is_twisted=False, skip=True))
+           
+        new_lid = lid + length_multiple - 1
 
         # create a Loop if needed
         if loop is None:
-            loop = Loop(lid, self.yarn_id, is_twisted)
+            loop = Loop(new_lid, self.yarn_id, is_twisted)
         
         # add node to graph
-        self.yarn_graph.add_node(lid, loop=loop)
+        # TODO: hack to make sure it's the right lid, but may break. enforce!!!!
+        #loop.loop_id = new_lid 
+        self.yarn_graph.add_node(new_lid, loop=loop)
 
         # if there were stitches on the yarn, then connect them yarnwise
         if not first_stitch:
             # can only connect if there are previous loops
-            self.yarn_graph.add_edge(self.last_loop_id, lid, length_multiple=length_multiple)
+            # if there should be multiple in between, make some dummy loops 
+            for i in range(length_multiple - 1):
+                # connect 
+                self.yarn_graph.add_edge(lid, lid + i)
+            # connect the last edge
+            self.yarn_graph.add_edge(self.last_loop_id, lid)
                     
         # and set the last_loop_id to this one
-        self.last_loop_id = lid
+        self.last_loop_id = new_lid
 
+        # TODO: need to return all the middle stitches so we can get courses properly
     
-        return (lid, loop)
+        return (new_lid, loop)
 
     def __contains__(self, item: Union[int, Loop]) -> bool:
         """

@@ -13,7 +13,8 @@ class Symbol_Table:
 
     def __init__(self):
         self._symbol_table: Dict[str, Union[Cable_Definition, Stitch_Definition, int]] = {"k": self._knit(), "p": self._purl(),
-                                                                                          "yo": self._yo(), "slip": self._slip()}
+                                                                                          "yo": self._yo(), "slip": self._slip(),
+                                                                                          "float": self._float()}
         self._decreases()
         self._cables()
         # set current row variable
@@ -147,6 +148,10 @@ class Symbol_Table:
     def _knit() -> Stitch_Definition:
         # Todo: Return (in one line) a Stitch Definition that will knit the next available loop
         return Stitch_Definition(pull_direction=Pull_Direction.BtF)
+        
+    @staticmethod
+    def _float() -> Stitch_Definition:
+        return Stitch_Definition(pull_direction=Pull_Direction.BtF, cabling_depth=0, offset_to_parent_loops=[], child_loops=0)
 
     def __contains__(self, item: str):
         return item.lower() in self._symbol_table

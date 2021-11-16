@@ -7,6 +7,10 @@ def test_stst():
     generator = Knitout_Generator(knitGraph)
     generator.write_instructions("test_stst.k")
 
+def test_skipped():
+    knitGraph = skipped_stockinette(4, 4)
+    generator = Knitout_Generator(knitGraph)
+    generator.write_instructions("test_skipped.k")
 
 def test_rib():
     knitGraph = rib(4, 4, 2)
@@ -33,8 +37,9 @@ def test_both_twists():
 
 
 if __name__ == "__main__":
-    test_stst()
-    test_rib()
-    test_seed()
-    test_lace()
-    test_both_twists()
+    # test_stst()
+    # test_rib()
+    # test_seed()
+    # test_lace()
+    # test_both_twists()
+    test_skipped()
