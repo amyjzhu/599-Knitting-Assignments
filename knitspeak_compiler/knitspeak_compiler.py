@@ -198,11 +198,13 @@ class Knitspeak_Compiler:
             loops, (loop_id, loop) = self.yarn.add_skip_loops(length_multiple=2)
             for int_loop_id, int_loop in loops: 
                 self.knit_graph.add_loop(int_loop)
-
+            # self.cur_course_loop_ids.append(loop_id)
+            self.knit_graph.add_loop(loop)
+            print("IN SKIP")
             return
 
 
-        if stitch_def.child_loops == 1:
+        elif stitch_def.child_loops == 1:
             # Todo: Implement processing the stitch into the knitgraph
             #  add a new loop to the end of  self.yarn and add it to the self.knitgraph
             #  iterate over the stitch's parent offsets in their stack order

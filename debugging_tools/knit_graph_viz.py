@@ -33,6 +33,7 @@ def visualize_knitGraph(knit_graph: Knit_Graph, display_name: str = "nx.html", h
     nodes_to_levels = {}
     for node in knit_graph.graph.nodes:
         course = loop_ids_to_course[node]
+        colour = "green" if knit_graph[node].skip else None
         parent_ids = [*knit_graph.graph.predecessors(node)]
         level = -1
         if len(parent_ids) == 0:
@@ -46,7 +47,7 @@ def visualize_knitGraph(knit_graph: Knit_Graph, display_name: str = "nx.html", h
                 parent_level = nodes_to_levels[parent_id]
                 level = parent_level - parent_offset
                 break
-        network.add_node(node, label=str(node), value=node, shape="circle", level=level, physics=True)
+        network.add_node(node, label=str(node), value=node, shape="circle", level=level, physics=True, color=colour)
         nodes_to_levels[node] = level
         prior_level = level
 
