@@ -37,10 +37,18 @@ def visualize_knitGraph(knit_graph: Knit_Graph, display_name: str = "nx.html", h
         parent_ids = [*knit_graph.graph.predecessors(node)]
         level = -1
         if len(parent_ids) == 0:
+            # TODO: assumption is that you can't float the last stitch
+            # if this is a skip, we stay on same course
+            factor = 1
+            if knit_graph[node].skip:
+                # TEMPORARY FIX
+                factor = 1
+                # factor = 0.5
+            
             if course % 2 == 0:
-                level = prior_level + 1
+                level = prior_level + (1 * factor)
             else:
-                level = prior_level - 1
+                level = prior_level - (1 * factor)
         else:
             for parent_id in parent_ids:
                 parent_offset = knit_graph.graph[parent_id][node]["parent_offset"]
@@ -49,15 +57,16 @@ def visualize_knitGraph(knit_graph: Knit_Graph, display_name: str = "nx.html", h
                 break
         network.add_node(node, label=str(node), value=node, shape="circle", level=level, physics=True, color=colour)
         nodes_to_levels[node] = level
+        print("I am ", node, level)
+
         prior_level = level
 
     for yarn in knit_graph.yarns.values():
-        for edge in yarn.yarn_graph.edges.data("length_multiple"):
+        for edge in yarn.yarn_graph.edges.data():
             prior_node = edge[0]
             next_node = edge[1]
-            length_multiple = edge[2]
             print(edge)
-            network.add_edge(prior_node, next_node, arrow="middle", physics=True, color="red", label=length_multiple)
+            network.add_edge(prior_node, next_node, arrow="middle", physics=True, color="red")
 
     for parent_id, child_id in knit_graph.graph.edges:
         direction = knit_graph.graph[parent_id][child_id]["pull_direction"]

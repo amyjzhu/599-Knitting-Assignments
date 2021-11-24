@@ -51,6 +51,7 @@ class Knitout_Generator:
         for course in self._sorted_courses:
             if course > 0:  # ignore the cast on course, already created
                 course_loops = self._courses_to_loop_ids[course]
+                print("course loops are ", course_loops)
                 self._knit_row(course_loops, pass_direction, course)  # Todo: implement below
                 pass_direction = pass_direction.opposite()
         self._instructions.append(outhook(self._machine_state, [self._carrier]))
@@ -80,12 +81,14 @@ class Knitout_Generator:
             ids = reversed(ids)
             
         for id in ids:
+            print("my id is ", id)
             needle = loop_id_to_target_needle[id]
             # Question: is supposed to be the loop_id created, not the old one? This works, 
             # but the comment in the file kinda suggests it should be new loop
             # make it on the same needle, and specify the loop
             knit_ops[needle] = id, needle
 
+        print("Adding carriage pass")
         # Make with instruction type knit and give the yarn carriers since we really use them
         carriage_pass = Carriage_Pass(Instruction_Type.Knit, direction, knit_ops, carrier_set, self._machine_state)
         self._add_carriage_pass(carriage_pass, f"knitting course number {course_number}")
@@ -130,11 +133,22 @@ class Knitout_Generator:
         max_needle = len(loop_ids) - 1  # last needle being used to create this swatch
         for loop_pos, loop_id in enumerate(loop_ids):  # find target needle locations of each loop in the course
             parent_ids = [*self._knit_graph.graph.predecessors(loop_id)]
-            for parent_id in parent_ids:  # find current needle of all parent loops
+            for parent_id in parent_ids:  # find current needle of all parent loops                
+                print("parents", parent_loops_to_needles)
                 parent_needle = self._machine_state.get_needle_of_loop(parent_id)
                 assert parent_needle is not None, f"Parent loop {parent_id} is not held on a needle"
                 parent_loops_to_needles[parent_id] = parent_needle
-            if len(parent_ids) == 0:  # yarn-over, yarn overs are made on front bed
+                print("my id is ", loop_id, "parent is ", parent_id, " at ", parent_needle)
+            print(loop_ids)
+            print(loop_pos, " loop position for id ", loop_id)
+            # if loop is skipped... 
+
+            loop = self._knit_graph[loop_id]
+            if loop.skip == True:
+                print("skipping ", loop_id, "which should be at pos ", loop_pos)
+                # skip this loop and don't output an instruction 
+
+            elif len(parent_ids) == 0:  # yarn-over, yarn overs are made on front bed
 
                 # find the correct needle to make a yarn-over according to carriage direction
                 if direction == Pass_Direction.Left_to_Right:
@@ -146,10 +160,10 @@ class Knitout_Generator:
                     parent_loops_to_needles[loop_id] = Needle(True, max_needle - loop_pos)
                 
                 
-                
             elif len(parent_ids) == 1:  # knit, purl, may be in cable, no needle
                 parent_id = [*parent_ids][0]
                 parent_needle = parent_loops_to_needles[parent_id]
+                print("!!parent needle is ", parent_needle)
                 parent_offset = self._knit_graph.graph[parent_id][loop_id]["parent_offset"]
                 cable_depth = self._knit_graph.graph[parent_id][loop_id]["depth"]
                 pull_direction = self._knit_graph.graph[parent_id][loop_id]["pull_direction"]
@@ -191,6 +205,7 @@ class Knitout_Generator:
                     parents_to_offsets[parent.loop_id] = offset
                     decrease_offsets[parent.loop_id] = offset
         
+        print("loop id to target needle", loop_id_to_target_needle)
         return loop_id_to_target_needle, parent_loops_to_needles, decrease_offsets, \
                front_cable_offsets, back_cable_offsets
 
@@ -318,6 +333,8 @@ class Knitout_Generator:
         even_tucks_data: Dict[Needle, Tuple[Optional[int], None]] = {}
         odd_tucks_data: Dict[Needle, Tuple[Optional[int], None]] = {}
         for needle_pos, loop_id in enumerate(first_course_loops):
+            print("first course loops ", first_course_loops)
+            print("WHY IS THIS SO BROKEN LOL THERE'S ONLY FOUR FIRST COURSE LOOPS OF COURSE WE DELETED THE OTHER")
             loop = self._knit_graph[loop_id]
             if not loop.skip:
                 if needle_pos % 2 == 0:

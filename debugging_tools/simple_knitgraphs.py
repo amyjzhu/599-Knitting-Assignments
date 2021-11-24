@@ -45,18 +45,21 @@ def skipped_stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
             # TODO: something important to note is that this would probably skip every single stitch
             # in the future. would need to yo here to make it not, but how? 
             # how can you specify the skipped stitch here? 
-            loops, (loop_id, loop) = yarn.add_skip_loops(length_multiple=2)
+            loops, (loop_id, loop) = yarn.add_skip_loops(extra_skips=0)
             for int_loop_id, int_loop in loops: 
                 knitGraph.add_loop(int_loop)
+            print("EMPTY LOOPS ARE ", loops, loop_id)
         else:
             loop_id, loop = yarn.add_loop_to_end()
+            first_row.append(loop_id)
 
-        first_row.append(loop_id)
+        
         knitGraph.add_loop(loop)
 
     prior_row = first_row
     for _ in range(1, height):
         next_row = []
+        # TODO: what if I want to make a new loop below? Need to place a float in the right spot... oh, would have to anyway in spec'ing pattern
         for parent_id in reversed(prior_row):
             print(parent_id)
             child_id, child = yarn.add_loop_to_end()

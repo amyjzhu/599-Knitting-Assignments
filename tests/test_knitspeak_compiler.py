@@ -1,19 +1,46 @@
 from debugging_tools.knit_graph_viz import visualize_knitGraph
 
 from knitspeak_compiler.knitspeak_compiler import Knitspeak_Compiler
+from knitting_machine.knitgraph_to_knitout import Knitout_Generator
+
 
 
 def test_stst():
     pattern = "all rs rows k. all ws rows p."
     compiler = Knitspeak_Compiler()
-    knit_graph = compiler.compile(4, 4, pattern)
-    visualize_knitGraph(knit_graph, "stst.html")
+    knit_graph = compiler.compile(5, 5, pattern)
+    # visualize_knitGraph(knit_graph, "stst.html")
 
 def test_skipped():
-    pattern = "1st row k, float, [k] to end. all ws rows p. 3rd row [k] to end. 5th row [k] to end."
+    pattern = "1st row [k] 2, float, [k] 2. 2nd row [p] 2, float, [p] 2. 3rd row [k] 2, yo, [k] to end. 4th row p. 5th row [k] to end."
+    compiler = Knitspeak_Compiler()
+    # 4 -> 4 + float.... eee
+    knit_graph = compiler.compile(4, 5, pattern)
+    visualize_knitGraph(knit_graph, "skipped.html")
+    generator = Knitout_Generator(knit_graph)
+    generator.write_instructions("test_skipped-from-ks.k")
+
+def test_skipped_4():
+    pattern = "all rs rows [k] 2, float, [k] 2. all ws rows [p] 2, float, [p] 2."
+    compiler = Knitspeak_Compiler()
+    knit_graph = compiler.compile(5, 4, pattern, skipped=[2]) # this is probably the worst way to specify this lol
+    visualize_knitGraph(knit_graph, "skipped.html")
+    generator = Knitout_Generator(knit_graph)
+    generator.write_instructions("test_skipped-from-ks-4.k")
+
+def test_skipped_3():
+    pattern = "1st row [k] 2, float, [k] 2. all ws rows p. 3rd row [k] 2, yo, [k] to end. 5th row [k] to end."
+    compiler = Knitspeak_Compiler()
+    knit_graph = compiler.compile(5, 5, pattern)
+    visualize_knitGraph(knit_graph, "skipped.html")
+    generator = Knitout_Generator(knit_graph)
+    generator.write_instructions("test_skipped-from-ks.k")
+
+def test_skipped_2():
+    pattern = "1st row k, float, [k] to end. all ws rows p. 3rd row k, yo, [k] to end. 5th row [k] to end."
     compiler = Knitspeak_Compiler()
     knit_graph = compiler.compile(4, 4, pattern)
-    visualize_knitGraph(knit_graph, "skipped.html")
+    visualize_knitGraph(knit_graph, "skipped2.html")
 
 def test_rib():
     rib_width = 2
@@ -42,7 +69,7 @@ def test_lace():
     """
     compiler = Knitspeak_Compiler()
     knit_graph = compiler.compile(9, 6, pattern)
-    visualize_knitGraph(knit_graph, "lace.html")
+    # visualize_knitGraph(knit_graph, "lace.html")
 
 
 def test_write_slipped_rib():
@@ -59,4 +86,6 @@ if __name__ == "__main__":
     # test_write_slipped_rib()
     # test_cable()
     # test_lace()
-    test_skipped()
+    test_skipped_4()
+    # test_skipped()
+    # test_skipped_2()

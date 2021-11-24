@@ -40,7 +40,7 @@ class Knitspeak_Compiler:
         """
         return self.current_row % 2 == 0
 
-    def compile(self, starting_width: int, row_count: int, pattern: str, patternIsFile: bool = False) -> Knit_Graph:
+    def compile(self, starting_width: int, row_count: int, pattern: str, patternIsFile: bool = False, skipped: List[int] = []) -> Knit_Graph:
         """
         Populates the knit_graph based on the compiled instructions. May throw errors from compilation
         :param row_count: the number of rows to knit before completing, pattern may repeat or be incomplete
@@ -51,34 +51,49 @@ class Knitspeak_Compiler:
         """
         self.parse_results = self._parser.parse(pattern, patternIsFile)
         self._organize_courses()
-        self.populate_0th_course(starting_width)
+        self.populate_0th_course(starting_width, skipped)
         while self.current_row < row_count:
             for course_id in sorted(self.course_ids_to_operations):
                 self._increment_current_row()
                 assert self.current_row % course_id == 0
                 course_instructions = self.course_ids_to_operations[course_id]
                 while len(self.loop_ids_consumed_by_current_course) < len(self.last_course_loop_ids):
+                    print("====")
+                    print("self.loop_ids_consumed_by_current_course ", self.loop_ids_consumed_by_current_course)
+                    print("self.last_course_loop_ids", self.last_course_loop_ids)
+                    print("====")
                     for instruction in course_instructions:
+                        print(instruction)
                         self._process_instruction(instruction)
                         if len(self.loop_ids_consumed_by_current_course) == len(self.last_course_loop_ids):
                             break
                 self.last_course_loop_ids = self.cur_course_loop_ids
+                print("!!!AND!!!")
+                print(self.last_course_loop_ids)
                 self.cur_course_loop_ids = []
                 self.loop_ids_consumed_by_current_course = set()
                 if self.current_row == row_count:
                     break
         return self.knit_graph
 
-    def populate_0th_course(self, starting_width: int):
+    def populate_0th_course(self, starting_width: int, skipped: List[int] = []):
         """
         Populates the first course of the knitgraph with starting_width loops.
         Adds loop_ids in yarn-wise order to self.last_course_loop_ids
         :param starting_width: the number of loops to create
         """
         for i in range(0, starting_width):
-            loop_id, loop = self.yarn.add_loop_to_end()
+            # THIS IS THE WORST LMAO CAUSING ALL MY ISSUES!!!!!!!!!!
+            # why would you do thisssssssssssssssssssss
+            # if we start with a float, we need a way to remove one of these...
+            # need to figure out what... ahhhh
+            if skipped.__contains__(i):
+                _, (loop_id, loop) = self.yarn.add_skip_loops(0)
+            else:
+                loop_id, loop = self.yarn.add_loop_to_end()
+                # One of the assumptions means I must do this, but... it feels so dirty
+                self.last_course_loop_ids.append(loop_id)
             self.knit_graph.add_loop(loop)
-            self.last_course_loop_ids.append(loop_id)
 
     def _organize_courses(self):
         """
@@ -168,6 +183,10 @@ class Knitspeak_Compiler:
 
         if not static_repeats:  # need to iterate until remaining loops is left
             while (len(self.last_course_loop_ids) - len(self.loop_ids_consumed_by_current_course)) > remaining_loops:
+                print("AGH")
+                print(self.last_course_loop_ids)
+                print(self.loop_ids_consumed_by_current_course)
+                print("AGHHH")
                 execute_instructions()
             assert remaining_loops == (len(self.last_course_loop_ids) - len(self.loop_ids_consumed_by_current_course))
         else:
@@ -186,22 +205,30 @@ class Knitspeak_Compiler:
         if self._working_ws and not flipped_by_cable:  # flips stitches following hand-knitting conventions
             stitch_def = stitch_def.copy_and_flip()
         course_index = len(self.cur_course_loop_ids)
+        print("current ", self.cur_course_loop_ids)
+        print("last", self.last_course_loop_ids)
         prior_course_index = (len(self.last_course_loop_ids) - 1) - course_index
+        assert(prior_course_index >= 0)
 
         if stitch_def.child_loops == 0 and stitch_def.offset_to_parent_loops == []:
             # it's a skipped stitch/float
-            # do we need to
-            # TODO: what if we skip multiple stitches?
-            # this loop shouldn't be at the end.
-            # need a way to create a filler float 
-            # rather than having a length
-            loops, (loop_id, loop) = self.yarn.add_skip_loops(length_multiple=2)
+            loops, (loop_id, loop) = self.yarn.add_skip_loops(extra_skips=0)
             for int_loop_id, int_loop in loops: 
+                # TODO:
+                potential_parent = self.last_course_loop_ids[prior_course_index]
+                if loop_id == 7:
+                    self.last_course_loop_ids.remove(potential_parent)
+                    print("EEEEE")
+
                 self.knit_graph.add_loop(int_loop)
+                print("Adding ", int_loop_id)
+            
+            # IT's not a consumable loop!
             # self.cur_course_loop_ids.append(loop_id)
+            # I should remove this because checks against the consumed loops... or should I? it's unusable
             self.knit_graph.add_loop(loop)
+            print("Adding ", loop_id)
             print("IN SKIP")
-            return
 
 
         elif stitch_def.child_loops == 1:
@@ -218,8 +245,13 @@ class Knitspeak_Compiler:
             self.knit_graph.add_loop(loop)
 
             # enumerate over parents
-            for stack, parent in enumerate(stitch_def.offset_to_parent_loops):    
+            for stack, parent in enumerate(stitch_def.offset_to_parent_loops):
+                print("loop ids consumed by current course", self.loop_ids_consumed_by_current_course)
                 parent_loop = self.last_course_loop_ids[prior_course_index + parent]
+                print(parent_loop, " by ", loop_id)
+                print("last course loop ids", self.last_course_loop_ids)
+                print("current course loop ids", self.cur_course_loop_ids)
+                print(prior_course_index)
                 if parent_loop is None:
                     raise IndexError("There is no such parent loop at index " % prior_course_index + parent)
                 if self.loop_ids_consumed_by_current_course.__contains__(parent_loop):

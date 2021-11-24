@@ -142,6 +142,7 @@ class Symbol_Table:
     @staticmethod
     def _purl() -> Stitch_Definition:
         # Todo: Return (in one line) a Stitch Definition that will purl the next available loop
+        print("I am purling but how many?")
         return Stitch_Definition(pull_direction=Pull_Direction.FtB) # only distinguishing feature
 
     @staticmethod
@@ -151,6 +152,7 @@ class Symbol_Table:
         
     @staticmethod
     def _float() -> Stitch_Definition:
+        print("FLOATING")
         return Stitch_Definition(pull_direction=Pull_Direction.BtF, cabling_depth=0, offset_to_parent_loops=[], child_loops=0)
 
     def __contains__(self, item: str):

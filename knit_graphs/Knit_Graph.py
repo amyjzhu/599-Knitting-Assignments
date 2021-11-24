@@ -168,6 +168,7 @@ class Knit_Graph:
             parent_max = max([loop_to_course[x.loop_id] for x in node.parent_loops] + [-1]) # in case no parents
             # compare parents to current course
             course = max([parent_max + 1, temp])
+            print("course is ", course, "I am ", node.loop_id, " parent is", node.parent_loops)
 
             loop_to_course[out] = course
             on_each_course.setdefault(course, []).append(out)
@@ -176,6 +177,9 @@ class Knit_Graph:
 
             # get the next neighbors
             outs = list(yarn.yarn_graph.neighbors(out))
+
+        # I also want to return the max length of all rows so we can put the floats in as appropriate 
+        # TODO
 
         return (loop_to_course, on_each_course)
 
