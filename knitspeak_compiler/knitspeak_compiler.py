@@ -23,7 +23,9 @@ class Knitspeak_Compiler:
         self.knit_graph.add_yarn(self.yarn)
         self.last_course_loop_ids: List[int] = []
         self.cur_course_loop_ids: List[int] = []
-        self.current_row = 0
+        self.cur_course_skipped_loops: List[int] = []
+        self.last_course_skipped_loops: List[int] = []
+        self.current_row = 0 
         self.loop_ids_consumed_by_current_course: Set[int] = set()
 
     def _increment_current_row(self):
@@ -68,9 +70,11 @@ class Knitspeak_Compiler:
                         if len(self.loop_ids_consumed_by_current_course) == len(self.last_course_loop_ids):
                             break
                 self.last_course_loop_ids = self.cur_course_loop_ids
+                self.last_course_skipped_loops = self.cur_course_skipped_loops
                 print("!!!AND!!!")
                 print(self.last_course_loop_ids)
                 self.cur_course_loop_ids = []
+                self.cur_course_skipped_loops = []
                 self.loop_ids_consumed_by_current_course = set()
                 if self.current_row == row_count:
                     break
@@ -89,11 +93,15 @@ class Knitspeak_Compiler:
             # need to figure out what... ahhhh
             if skipped.__contains__(i):
                 _, (loop_id, loop) = self.yarn.add_skip_loops(0)
+                self.last_course_skipped_loops.append(loop_id)
+
             else:
                 loop_id, loop = self.yarn.add_loop_to_end()
                 # One of the assumptions means I must do this, but... it feels so dirty
-                self.last_course_loop_ids.append(loop_id)
+                # self.last_course_loop_ids.append(loop_id)
             self.knit_graph.add_loop(loop)
+            self.last_course_loop_ids.append(loop_id)
+
 
     def _organize_courses(self):
         """
@@ -207,28 +215,40 @@ class Knitspeak_Compiler:
         course_index = len(self.cur_course_loop_ids)
         print("current ", self.cur_course_loop_ids)
         print("last", self.last_course_loop_ids)
+        # it's possible that the parent is a float, but that shouldn't be the case 
+        # problem is that a float is never consumed. 
+        # so we need to check float "children" and yo "children"
         prior_course_index = (len(self.last_course_loop_ids) - 1) - course_index
+
         assert(prior_course_index >= 0)
 
         if stitch_def.child_loops == 0 and stitch_def.offset_to_parent_loops == []:
             # it's a skipped stitch/float
             loops, (loop_id, loop) = self.yarn.add_skip_loops(extra_skips=0)
             for int_loop_id, int_loop in loops: 
-                # TODO:
-                potential_parent = self.last_course_loop_ids[prior_course_index]
-                if loop_id == 7:
-                    self.last_course_loop_ids.remove(potential_parent)
-                    print("EEEEE")
+                # TODO: render this unnecessary 
+                # potential_parent = self.last_course_loop_ids[prior_course_index]
+                # if loop_id == 7:
+                #     self.last_course_loop_ids.remove(potential_parent)
+                #     print("EEEEE")
 
                 self.knit_graph.add_loop(int_loop)
                 print("Adding ", int_loop_id)
+                # TODO: should i do something extra here? with checking parents
             
             # IT's not a consumable loop!
-            # self.cur_course_loop_ids.append(loop_id)
+            self.cur_course_loop_ids.append(loop_id)
+            self.cur_course_skipped_loops.append(loop_id)
             # I should remove this because checks against the consumed loops... or should I? it's unusable
             self.knit_graph.add_loop(loop)
             print("Adding ", loop_id)
             print("IN SKIP")
+            
+            # it's possible our parent is a float. In that case, make sure it's consumed.
+            parent_loop = self.last_course_loop_ids[prior_course_index]
+            if self.last_course_skipped_loops.__contains__(parent_loop):
+                # "consume" the parent
+                self.loop_ids_consumed_by_current_course.add(parent_loop)
 
 
         elif stitch_def.child_loops == 1:
@@ -243,6 +263,15 @@ class Knitspeak_Compiler:
             # add new loop to end of yarn and to knitgraph
             loop_id, loop = self.yarn.add_loop_to_end()
             self.knit_graph.add_loop(loop)
+
+            if stitch_def.offset_to_parent_loops == []:
+                # in a yarnover, we also want to check for parent floats
+                # it's possible our parent is a float. In that case, make sure it's consumed.
+                parent_loop = self.last_course_loop_ids[prior_course_index]
+                if self.last_course_skipped_loops.__contains__(parent_loop):
+                    # "consume" the parent
+                    self.loop_ids_consumed_by_current_course.add(parent_loop)
+
 
             # enumerate over parents
             for stack, parent in enumerate(stitch_def.offset_to_parent_loops):

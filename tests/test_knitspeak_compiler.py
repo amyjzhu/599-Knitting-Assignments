@@ -15,7 +15,7 @@ def test_skipped():
     pattern = "1st row [k] 2, float, [k] 2. 2nd row [p] 2, float, [p] 2. 3rd row [k] 2, yo, [k] to end. 4th row p. 5th row [k] to end."
     compiler = Knitspeak_Compiler()
     # 4 -> 4 + float.... eee
-    knit_graph = compiler.compile(4, 5, pattern)
+    knit_graph = compiler.compile(5, 5, pattern, skipped=[2])
     visualize_knitGraph(knit_graph, "skipped.html")
     generator = Knitout_Generator(knit_graph)
     generator.write_instructions("test_skipped-from-ks.k")
