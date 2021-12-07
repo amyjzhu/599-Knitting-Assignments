@@ -81,8 +81,9 @@ class Knitout_Generator:
             ids = reversed(ids)
             
         for id in ids:
-            print("my id is ", id)
+            
             needle = loop_id_to_target_needle[id]
+            print("my id is ", id, " needle is ", needle)
             # Question: is supposed to be the loop_id created, not the old one? This works, 
             # but the comment in the file kinda suggests it should be new loop
             # make it on the same needle, and specify the loop
@@ -159,19 +160,44 @@ class Knitout_Generator:
                     loop_id_to_target_needle[loop_id] = Needle(True, max_needle - loop_pos)
                     parent_loops_to_needles[loop_id] = Needle(True, max_needle - loop_pos)
                 
+                # == are our neighbors' parents next to each other? could be complicated if next to decrease... 
+                # check the neighbors and see if they only have one loop parents.
+                # prev_loop_id = self._knit_graph[loop_id].prior_loop_id
+                # next_loop_id = self._knit_graph[loop_id].next_loop_id
+                # prev_loop = self._knit_graph[prev_loop_id]
+                # next_loop = self._knit_graph[next_loop_id]
+
+                # if len(prev_loop.parent_loops) == 1 and len(next_loop.parent_loops) == 1:
+                #     print("I am doing some shenanigans")
+                #     # are the loops' parents next to each other?
+                #     parent_1 = prev_loop.parent_loops[0]
+                #     parent_2 = next_loop.parent_loops[0]
+                #     parent_1_needle = parent_loops_to_needles[parent_1]
+                #     parent_2_needle = parent_loops_to_needles[parent_2]
+                #     if parent_1_needle.position == parent_2_needle.position + 1:
+                #         current_row_shift += 1
+
+                
                 
             elif len(parent_ids) == 1:  # knit, purl, may be in cable, no needle
                 parent_id = [*parent_ids][0]
                 parent_needle = parent_loops_to_needles[parent_id]
+                print("my parent id is ", parent_id)
                 print("!!parent needle is ", parent_needle)
                 parent_offset = self._knit_graph.graph[parent_id][loop_id]["parent_offset"]
                 cable_depth = self._knit_graph.graph[parent_id][loop_id]["depth"]
                 pull_direction = self._knit_graph.graph[parent_id][loop_id]["pull_direction"]
                 front_bed = pull_direction is Pull_Direction.BtF  # knit on front bed, purl on back bed
 
+                
                 # is cabling happening?
+                #TODO: something is weird with cabling. maybe we have to flip the parent_offset if we're going in the opposite direction?
+                if direction == Pass_Direction.Right_to_Left:
+                    parent_offset = parent_offset * -1
                 if parent_offset != 0:
+                    print("I AM LOOP ", loop_id, " in a cable, with parent_offset ", parent_offset, " and depth ", cable_depth)
                     # is this a front or back cable?
+                    # if cable_depth == 1:
                     if cable_depth > 0:
                         # we cross in front
                         front_cable_offsets[parent_id] = parent_offset
@@ -182,6 +208,7 @@ class Knitout_Generator:
 
                     target_needle = parent_needle.offset(parent_offset)
                     loop_id_to_target_needle[loop_id] = target_needle
+                    print("target needle is ", target_needle)
                     parents_to_offsets[parent_id] = parent_offset
                 else: # regular op like knit/purl
                     if front_bed:
